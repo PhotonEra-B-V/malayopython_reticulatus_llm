@@ -164,7 +164,7 @@ async def test_shared_client_reused_across_chats(mock_http):
     await pyllym.aclose()
     import asyncio
 
-    assert asyncio.get_running_loop() not in _CLIENT_CACHE
+    assert id(asyncio.get_running_loop()) not in _CLIENT_CACHE
 
 
 @pytest.mark.asyncio
@@ -175,3 +175,30 @@ async def test_media_async_blob_helpers_exist():
     assert await img.ato_blob() == b"hi"
     vid = Video(data="aGk=")
     assert await vid.ato_blob() == b"hi"
+
+
+def test_dead_loop_is_evicted_from_client_cache():
+    """A loop that ends without aclose() must not stay pinned in the cache.
+
+    A ClientSession references its loop via its TCPConnector, so keying the
+    cache by the loop object kept every finished asyncio.run()'s loop, session
+    and resolver thread alive forever.
+    """
+    import asyncio
+    import gc
+    import weakref
+
+    from pyllym.connection import _CLIENT_CACHE, _shared_client
+
+    loop_ref: list[weakref.ref] = []
+
+    async def touch() -> None:
+        _shared_client(30)
+        loop_ref.append(weakref.ref(asyncio.get_running_loop()))
+
+    before = len(_CLIENT_CACHE)
+    asyncio.run(touch())  # deliberately no aclose()
+    gc.collect()
+
+    assert loop_ref[0]() is None, "dead event loop is still referenced"
+    assert len(_CLIENT_CACHE) == before, "cache entry for a dead loop was not evicted"
