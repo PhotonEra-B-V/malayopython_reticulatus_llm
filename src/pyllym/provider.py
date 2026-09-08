@@ -165,6 +165,9 @@ class Provider:
             prompt, model=model, params=params or {}
         )
 
+    async def parse_layout(self, file: str, *, model: str, **options: Any) -> Any:
+        return await self._default_protocol()(self).parse_layout(file, model=model, **options)
+
     async def speak(
         self,
         input: str,

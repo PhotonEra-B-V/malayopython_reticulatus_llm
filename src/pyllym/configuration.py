@@ -23,6 +23,7 @@ _SYSTEM_DEFAULTS: dict[str, Any] = {
     "default_image_model": "gpt-image-1.5",
     "default_speech_model": "gpt-4o-mini-tts",
     "default_transcription_model": "whisper-1",
+    "default_layout_parsing_model": "glm-ocr",
     "default_video_model": None,
     "model_registry_file": None,  # resolved lazily to packaged models.json
     "model_registry_class": "Model",
