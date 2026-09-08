@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.16.0b2 (2026-09-08)
+
+### Added
+
+- **Claude Fable 5.1** (`claude-fable-5-1`) registered for the `anthropic`
+  provider. 1,000,000-token context window, 128,000 max output tokens,
+  $10/$50 per MTok. Cache reads are **$0.25/MTok** — a real reduction from
+  Claude Fable 5's $1.00, not inherited from it. Exposes the five-level effort
+  ladder (`low`, `medium`, `high`, `xhigh`, `max`). Aliases map the model
+  across `anthropic`, `openrouter`, `bedrock` and `vertexai`; Bedrock serves it
+  as `anthropic.claude-fable-5-1`, without the `eu.` prefix Fable 5 uses. A
+  `claude-fable-5.1` convenience key resolves the dotted form to the canonical
+  id.
+- **GPT-6 Astra** (`gpt-6-astra`) and **GPT-6 Astra Pro**
+  (`gpt-6-astra-pro`) registered for the `openai` provider. 1,050,000-token
+  context window, 128,000 max output tokens, $10/$50 per MTok with $1.00 cache
+  reads. Both carry the long-context pricing tier that applies past 272K input
+  tokens (2x input and cache, 1.5x output), using the same metadata shape as
+  `gpt-5.5`, and the five-level effort ladder. Aliases cover `openai` and
+  `openrouter`.
+
+  Note that OpenAI's sixth-generation flagship ships as `gpt-6-astra`; there is
+  no bare `gpt-6` model id.
+
+  Neither of these models was reachable via `pyllym.models.refresh()` — the
+  upstream `models.dev` dataset has not indexed them yet, so both were added
+  with `metadata.source = "manual"`.
+
 ## 1.16.0b1 (2026-09-08)
 
 ### Added
