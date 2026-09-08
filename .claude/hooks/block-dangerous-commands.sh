@@ -42,14 +42,20 @@ block() {
 # NO \b word boundary and NO \d — use (^|[^alnum]) style guards and explicit
 # whitespace via [[:space:]]. Keep patterns conservative to avoid false
 # positives on legitimate project commands.
+#
+# Patterns match the whole command string, quoted text included, so a bare
+# (^|[^[:alnum:]])word([^[:alnum:]]|$) guard also fires on the word inside a
+# commit message, an echo, or a grep needle. For verbs that are only dangerous
+# as the command itself, anchor to command position — start of string or after
+# a separator (; & | && ||) — rather than to word boundaries.
 patterns=(
     'rm[[:space:]]+(-[[:alnum:]]*[rf][[:alnum:]]*[[:space:]]+)+(/|~|\$HOME|\*|\.($|[[:space:]]))::recursive/forced rm of root, home, or wildcard'
     ':[[:space:]]*\([[:space:]]*\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&::fork bomb'
-    '(^|[^[:alnum:]])mkfs(\.[[:alnum:]]+)?([^[:alnum:]]|$)::filesystem format (mkfs)'
+    '(^|[;&|]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?(/sbin/|/usr/sbin/)?mkfs(\.[[:alnum:]]+)?([[:space:]]|;|&|\||$)::filesystem format (mkfs)'
     '(^|[^[:alnum:]])dd[[:space:]][^|]*of=/dev/::dd writing to a raw device'
     '>[[:space:]]*/dev/(sd|nvme|disk|hd)::redirect into a raw disk device'
-    '(^|[^[:alnum:]])shred([^[:alnum:]]|$)::secure-erase (shred)'
-    '(^|[^[:alnum:]])(shutdown|reboot|halt|poweroff)([^[:alnum:]]|$)::power state change'
+    '(^|[;&|]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?(/usr/bin/)?shred([[:space:]]|;|&|\||$)::secure-erase (shred)'
+    '(^|[;&|]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?(systemctl[[:space:]]+)?(/sbin/|/usr/sbin/)?(shutdown|reboot|halt|poweroff)([[:space:]]|;|&|\||$)::power state change'
     'chmod[[:space:]]+-R[[:space:]]+0*777[[:space:]]+/::recursive world-writable on root'
     'chown[[:space:]]+-R[[:space:]].*[[:space:]]+/[[:space:]]*$::recursive chown of root'
     'git[[:space:]]+push[[:space:]].*--force::git push --force (use --force-with-lease)'
