@@ -44,6 +44,7 @@ from .errors import (
     UnsupportedAttachmentError,
 )
 from .image import Image
+from .layout_parsing import LayoutElement, LayoutParsing
 from .mcp import MCPNotInstalledError, MCPServer, MCPTool, tools_from_session
 from .message import Message, Role
 from .moderation import Moderation
@@ -66,7 +67,7 @@ from .transcription import Transcription
 from .uploaded_file import UploadedFile
 from .video import Video
 
-__version__ = "1.16.0a2"
+__version__ = "1.16.0b1"
 
 _config: Configuration | None = None
 
@@ -133,6 +134,12 @@ async def transcribe(audio_file: str, **kwargs: Any) -> Transcription:
     from .transcription import transcribe as _transcribe
 
     return await _transcribe(audio_file, **kwargs)
+
+
+async def parse_layout(file: str, **kwargs: Any) -> LayoutParsing:
+    from .layout_parsing import parse_layout as _parse_layout
+
+    return await _parse_layout(file, **kwargs)
 
 
 async def upload(file: Any, **kwargs: Any) -> UploadedFile:
@@ -236,6 +243,8 @@ __all__ = [
     "LLMError",
     "LLMRequest",
     "LLMResponse",
+    "LayoutElement",
+    "LayoutParsing",
     "MCPNotInstalledError",
     "MCPServer",
     "MCPTool",
@@ -279,6 +288,7 @@ __all__ = [
     "models",
     "moderate",
     "paint",
+    "parse_layout",
     "speak",
     "tool_from_path",
     "tools_from_session",

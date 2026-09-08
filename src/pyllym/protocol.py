@@ -149,6 +149,9 @@ class Protocol(StreamingMixin):
     ) -> Any:
         raise NotImplementedError("This provider does not support video generation")
 
+    async def parse_layout(self, file: str, *, model: str, **options: Any) -> Any:
+        raise NotImplementedError("This provider does not support layout parsing")
+
     def maybe_normalize_temperature(
         self, temperature: float | None, model: Info | None
     ) -> float | None:

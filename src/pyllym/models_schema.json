@@ -23,19 +23,19 @@
         "description": "Model family (e.g., gpt-4, claude-3)"
       },
       "created_at": {
-        "type": ["null", {"type": "string", "format": "date-time"}],
+        "anyOf": [{"type": "null"}, {"type": "string", "format": "date-time"}],
         "description": "Creation date of the model"
       },
       "context_window": {
-        "type": ["null", {"type": "integer", "minimum": 0}],
+        "anyOf": [{"type": "null"}, {"type": "integer", "minimum": 0}],
         "description": "Maximum context window size"
       },
       "max_output_tokens": {
-        "type": ["null", {"type": "integer", "minimum": 0}],
+        "anyOf": [{"type": "null"}, {"type": "integer", "minimum": 0}],
         "description": "Maximum output tokens"
       },
       "knowledge_cutoff": {
-        "type": ["null", {"type": "string", "format": "date"}],
+        "anyOf": [{"type": "null"}, {"type": "string", "format": "date"}],
         "description": "Knowledge cutoff date"
       },
       "modalities": {

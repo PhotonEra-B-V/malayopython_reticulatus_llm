@@ -64115,5 +64115,152 @@
       "object": "model",
       "owned_by": "xai"
     }
+  },
+  {
+    "id": "glm-5.3",
+    "name": "GLM-5.3",
+    "provider": "zhipu",
+    "family": "glm",
+    "created_at": null,
+    "context_window": 1048576,
+    "max_output_tokens": 131072,
+    "knowledge_cutoff": null,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "capabilities": [
+      "streaming",
+      "function_calling",
+      "structured_output",
+      "reasoning"
+    ],
+    "pricing": {
+      "text_tokens": {
+        "standard": {
+          "input_per_million": 1.4,
+          "output_per_million": 4.4,
+          "cache_read_input_per_million": 0.26
+        }
+      }
+    },
+    "metadata": {
+      "description": "GLM-5.3 is Z.ai's flagship reasoning model for complex software engineering and long-horizon agent tasks. Text-only input, 1M-token context window, up to 128K output tokens. Reasoning is always on.",
+      "source": "z.ai docs",
+      "provider_id": "zhipu",
+      "interleaved": {
+        "field": "reasoning_content"
+      },
+      "cost": {
+        "input": 1.4,
+        "output": 4.4,
+        "cache_read": 0.26
+      },
+      "limit": {
+        "context": 1048576,
+        "output": 131072
+      }
+    }
+  },
+  {
+    "id": "glm-5.3-flash",
+    "name": "GLM-5.3-Flash",
+    "provider": "zhipu",
+    "family": "glm-flash",
+    "created_at": null,
+    "context_window": 1048576,
+    "max_output_tokens": 131072,
+    "knowledge_cutoff": null,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video",
+        "file"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "capabilities": [
+      "streaming",
+      "function_calling",
+      "structured_output",
+      "reasoning"
+    ],
+    "pricing": {
+      "text_tokens": {
+        "standard": {
+          "input_per_million": 0.15,
+          "output_per_million": 0.5,
+          "cache_read_input_per_million": 0.03
+        }
+      }
+    },
+    "metadata": {
+      "description": "GLM-5.3-Flash is the natively multimodal, cost-optimized variant of GLM-5.3, accepting video/image/text/file input with a 1M-token context window and up to 128K output tokens.",
+      "source": "z.ai docs",
+      "provider_id": "zhipu",
+      "interleaved": {
+        "field": "reasoning_content"
+      },
+      "cost": {
+        "input": 0.15,
+        "output": 0.5,
+        "cache_read": 0.03
+      },
+      "limit": {
+        "context": 1048576,
+        "output": 131072
+      },
+      "note": "List price. z.ai ran a 50% launch promotion ($0.075/$0.25/$0.015 per million) that ended 2026-09-09 24:00 UTC+8."
+    }
+  },
+  {
+    "id": "glm-ocr",
+    "name": "GLM-OCR",
+    "provider": "zhipu",
+    "family": "glm-ocr",
+    "created_at": null,
+    "context_window": null,
+    "max_output_tokens": null,
+    "knowledge_cutoff": null,
+    "modalities": {
+      "input": [
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "capabilities": [],
+    "pricing": {
+      "text_tokens": {
+        "standard": {
+          "input_per_million": 0.03,
+          "output_per_million": 0.03
+        }
+      }
+    },
+    "metadata": {
+      "description": "GLM-OCR is Z.ai's 0.9B document-understanding model. It parses the layout of images and PDFs, returning Markdown text plus positional layout elements. Served from the dedicated layout_parsing endpoint, not chat/completions.",
+      "source": "z.ai docs",
+      "provider_id": "zhipu",
+      "endpoint": "layout_parsing",
+      "limits": {
+        "max_image_mb": 10,
+        "max_pdf_mb": 50,
+        "max_pages": 100
+      },
+      "cost": {
+        "input": 0.03,
+        "output": 0.03
+      }
+    }
   }
 ]

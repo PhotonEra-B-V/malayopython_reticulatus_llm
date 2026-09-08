@@ -13,9 +13,9 @@ Ollama (local), vLLM (local), OpenRouter, Perplexity, Vertex AI, xAI, GPUStack,
 Azure, and any OpenAI-compatible API — behind one consistent interface.
 
 > [!NOTE]
-> **Alpha release.** This is an early, experimental alpha — we are still
-> testing it. APIs may change without notice and things may break. Not
-> recommended for production use.
+> **Beta release.** The 1.16.0 feature set is complete and stabilising, but
+> APIs may still change before the stable release. Not yet recommended for
+> production use.
 
 ```python
 import pyllym
@@ -51,10 +51,10 @@ print(message.content)
 ## Installation
 
 > [!IMPORTANT]
-> pyllym is currently published as a **pre-release** (alpha). `pip` skips
+> pyllym is currently published as a **pre-release** (beta). `pip` skips
 > pre-releases by default, so you must pass `--pre`:
 > `pip install --pre pyllym`. A plain `pip install pyllym` will not find the
-> alpha until a stable release exists.
+> beta until a stable release exists.
 
 ```bash
 pip install --pre pyllym          # core

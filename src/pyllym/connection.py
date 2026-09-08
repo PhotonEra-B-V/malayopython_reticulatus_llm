@@ -8,7 +8,6 @@ import asyncio
 import json as _json
 import logging
 import random
-import weakref
 from collections.abc import AsyncIterator, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -89,14 +88,74 @@ def _client_timeout(timeout: Any) -> aiohttp.ClientTimeout:
 # preserves connection pooling/keep-alive across Chat instances instead of
 # building (and leaking) a fresh session per facade call; keying by loop
 # avoids reusing connections across event loops.
-_CLIENT_CACHE: weakref.WeakKeyDictionary[Any, dict[tuple[Any, ...], aiohttp.ClientSession]] = (
-    weakref.WeakKeyDictionary()
-)
+#
+# The key is id(loop), never the loop object -- not even weakly. A
+# ClientSession reaches its loop through its TCPConnector, so a
+# WeakKeyDictionary keyed on the loop keeps its own key alive through its
+# value: the entry is never evicted, and every asyncio.run() strands a loop,
+# a session and the connector's resolver thread. Entries are instead evicted
+# by _evict_on_close, which hooks the loop's own close(); since id() is only
+# unique among live objects, an entry must never outlive its loop.
+_CLIENT_CACHE: dict[int, dict[tuple[Any, ...], aiohttp.ClientSession]] = {}
+
+
+def _current_event_loop() -> asyncio.AbstractEventLoop | None:
+    """The thread's current event loop, or None if it has none set."""
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError:
+        # No loop set for this thread (the usual case under asyncio.run).
+        return None
+
+
+def _evict_on_close(loop: asyncio.AbstractEventLoop) -> None:
+    """Close and drop a loop's cached sessions when the loop shuts down.
+
+    Wraps ``loop.close()``, which ``asyncio.run`` calls once the loop has
+    stopped but before it is discarded. This is the only workable hook: the
+    cache entry keeps the loop alive (a session reaches its loop through its
+    connector), so a weakref finalizer on the loop would wait forever on a
+    collection the entry itself prevents.
+
+    Sessions are closed here rather than merely dropped, so aiohttp does not
+    emit "Unclosed client session" from ``__del__``. Callers that want an
+    orderly async shutdown should still await :func:`aclose`.
+    """
+    loop_id = id(loop)
+    original = loop.close
+
+    def close() -> None:
+        per_loop = _CLIENT_CACHE.pop(loop_id, {})
+        pending = [c for c in per_loop.values() if not c.closed]
+        if pending and not loop.is_closed():
+            # The loop has stopped but is not yet closed, so it can still run
+            # these (non-blocking) close coroutines to completion. asyncio.run
+            # has already detached the loop from the thread by now, so it is
+            # reinstated for the call -- gather() and friends resolve the
+            # current loop implicitly and would fail without it.
+            previous = _current_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(
+                    asyncio.gather(*(c.close() for c in pending), return_exceptions=True)
+                )
+            except Exception:  # pragma: no cover - best-effort cleanup
+                logger.debug("failed to close pooled HTTP sessions", exc_info=True)
+            finally:
+                asyncio.set_event_loop(previous)
+        original()
+
+    loop.close = close  # type: ignore[method-assign]
 
 
 def _shared_client(timeout: Any) -> aiohttp.ClientSession:
     loop = asyncio.get_running_loop()
-    per_loop = _CLIENT_CACHE.setdefault(loop, {})
+    loop_id = id(loop)
+    per_loop = _CLIENT_CACHE.get(loop_id)
+    if per_loop is None:
+        per_loop = {}
+        _CLIENT_CACHE[loop_id] = per_loop
+        _evict_on_close(loop)
     key = (timeout,)
     client = per_loop.get(key)
     if client is None or client.closed:
@@ -110,9 +169,8 @@ async def aclose() -> None:
 
     Call once at application shutdown (exported as ``pyllym.aclose``).
     """
-    loop = asyncio.get_running_loop()
-    per_loop = _CLIENT_CACHE.pop(loop, {})
-    for client in per_loop.values():
+    per_loop = _CLIENT_CACHE.pop(id(asyncio.get_running_loop()), None)
+    for client in (per_loop or {}).values():
         if not client.closed:
             await client.close()
 
